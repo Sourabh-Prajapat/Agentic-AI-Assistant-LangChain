@@ -3,6 +3,7 @@ from langchain.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 
 # Sample student database
@@ -85,55 +86,74 @@ model = ChatGoogleGenerativeAI(
 )
 
 
-agent = create_agent(
-    model=model,
-    tools=[
-        calculator,
-        get_student_info,
-        get_student_attendance
-    ],
-    system_prompt=(
-        "You are a helpful student assistant. "
-        "Use the available tools to retrieve student information "
-        "and perform calculations when needed. "
-        "Do not invent student data. "
-        "If a student is not found, explain that clearly."
-    )
+system_prompt = (
+    "You are a helpful student assistant. "
+    "Use the available tools to retrieve student information "
+    "and perform calculations when needed. "
+    "Do not invent student data. "
+    "If a student is not found, explain that clearly."
 )
 
-conversation = []
 
-while True:
-    print("\n")
-    print("="*30)
-    print("Type'Exit' for exit.")
-    print("="*30)
-    question = input("\nAsk: ").strip()
-    
-    if question.lower() == "exit":
-        print("Assistant Goodbye!")
-        break
-    
-    if not question:
-        continue
-    
-    conversation.append(HumanMessage(content=question))
-    
-    result = agent.invoke({
-        "messages": conversation
-    })
-    
-    conversation = result["messages"]
-    
-    content = conversation[-1].content
-    
-    print("\nAssistant: ")
+# Use a persistent SQLite database for conversation history.
+with SqliteSaver.from_conn_string("checkpoints.db") as checkpointer:
 
-    if isinstance(content, list):
-        for block in content:
-            if isinstance(block, dict) and block.get("type") == "text":
-                print(block["text"])
-            elif hasattr(block, "text"):
-                print(block.text)
-    else:
-        print(content)
+    agent = create_agent(
+        model=model,
+        tools=[
+            calculator,
+            get_student_info,
+            get_student_attendance
+        ],
+        system_prompt=system_prompt,
+        checkpointer=checkpointer
+    )
+
+    # Messages with this ID belong to the same conversation.
+    config = {
+        "configurable": {
+            "thread_id": "session_1"
+        }
+    }
+
+    while True:
+        print("\n")
+        print("=" * 30)
+        print("Type 'exit' to quit.")
+        print("=" * 30)
+
+        question = input("\nAsk: ").strip()
+
+        if question.lower() == "exit":
+            print("Assistant: Goodbye!")
+            break
+
+        if not question:
+            continue
+
+        try:
+            result = agent.invoke(
+                {
+                    "messages": [
+                        HumanMessage(content=question)
+                    ]
+                },
+                config=config
+            )
+
+            content = result["messages"][-1].content
+
+            print("\nAssistant:")
+
+            if isinstance(content, list):
+                for block in content:
+                    if isinstance(block, dict):
+                        if block.get("type") == "text":
+                            print(block["text"])
+                    elif hasattr(block, "text"):
+                        print(block.text)
+            else:
+                print(content)
+
+        except Exception as error:
+            print(f"\nAn error occurred: {error}")

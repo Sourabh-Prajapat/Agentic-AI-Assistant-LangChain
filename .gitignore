@@ -1,43 +1,7 @@
-# Python cache
-
+.venv/
+.env
 **pycache**/
 *.py[cod]
-*$py.class
-
-# Virtual environments
-
-.venv/
-venv/
-env/
-
-# Environment variables and secrets
-
-.env
-.env.*
-!.env.example
-
-# Testing and coverage
-
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Build artifacts
-
-build/
-dist/
-*.egg-info/
-
-# IDE and editor settings
-
-.vscode/
-.idea/
-
-# OS files
-
-.DS_Store
-Thumbs.db
-
-# Logs
-
-*.log
+checkpoints.db
+*.sqlite
+*.sqlite3
