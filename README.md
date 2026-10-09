@@ -1,99 +1,208 @@
 # 🤖 Agentic AI Assistant — LangChain
 
-A Python-based AI assistant powered by Google Gemini and LangChain that intelligently selects tools to answer student-related questions and perform mathematical calculations.
+### An intelligent AI assistant powered by Python, LangChain, and Google Gemini.
+
+A terminal-based AI assistant that intelligently selects tools to answer student-related questions, retrieve student information, and perform mathematical calculations. It also maintains conversation history during the current session, enabling contextual follow-up questions.
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/LangChain-Agentic%20AI-1C3C3C?style=for-the-badge" alt="LangChain" />
+  <img src="https://img.shields.io/badge/LLM-Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Google Gemini" />
+</p>
+
+---
 
 ## ✨ Features
 
 * 🧠 **Gemini-Powered AI** — Understands user questions and generates natural-language responses.
-* 🛠️ **LLM Tool Calling** — Selects appropriate Python tools based on the user's request.
+* 🛠️ **LLM Tool Calling** — Selects and executes appropriate Python tools based on user requests.
 * 🧮 **Mathematical Calculations** — Supports addition, subtraction, multiplication, and division.
-* 🎓 **Student Information Retrieval** — Retrieves student branch, year of study, and attendance.
-* 📊 **Attendance Lookup** — Retrieves attendance percentages for registered sample students.
+* 🎓 **Student Information Retrieval** — Retrieves a student's branch, year of study, and attendance.
+* 📊 **Attendance Lookup** — Retrieves attendance percentages for registered students.
 * 🔄 **Multi-Tool Workflows** — Can combine tool calls to answer questions requiring multiple steps.
-* 💬 **Interactive Terminal Interface** — Accepts questions directly from the command line.
+* 💬 **Multi-Turn Conversations** — Retains conversation messages during the current session to support follow-up questions.
+* 🖥️ **Interactive Terminal Interface** — Accepts questions continuously until the user types `exit`.
+* 🔐 **Environment-Based API Key** — Reads the Gemini API key from an environment variable.
 
 ## 🧠 How It Works
 
 ```text
-          User Question
-                │
-                ▼
-          LangChain Agent
-                │
-                ▼
-           Gemini LLM
-                │
-                ▼
-        Select Appropriate Tool
-                │
-        ┌───────┼────────┐
-        ▼       ▼        ▼
-   Calculator  Student   Attendance
-               Info       Lookup
-        │       │          │
-        └───────┼──────────┘
-                ▼
-          Tool Results
-                │
-                ▼
-           Gemini LLM
-                │
-                ▼
-          Final Answer
+                  User Question
+                        │
+                        ▼
+                 LangChain Agent
+                        │
+                        ▼
+                    Gemini LLM
+                        │
+                        ▼
+              Select Appropriate Tool
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+        Calculator   Student   Attendance
+                       Info      Lookup
+             │          │          │
+             └──────────┼──────────┘
+                        ▼
+                   Tool Results
+                        │
+                        ▼
+                    Gemini LLM
+                        │
+                        ▼
+                   Final Answer
+                        │
+                        ▼
+              Update Conversation
+                    History
 ```
 
 The agent receives a question, determines whether a tool is needed, executes the selected tool through LangChain, and uses the result to generate a response.
 
+After each interaction, the program updates the conversation history using the messages returned by the agent. This allows the assistant to use previous messages when responding to follow-up questions during the same session.
+
 ## 🛠️ Available Tools
 
-| Tool                     | Description                                                  |
-| ------------------------ | ------------------------------------------------------------ |
-| `calculator`             | Performs addition, subtraction, multiplication, and division |
-| `get_student_info`       | Retrieves a student's branch, year, and attendance           |
-| `get_student_attendance` | Retrieves a student's attendance percentage                  |
+### 🧮 1. Calculator — `calculator`
+
+Performs mathematical operations on two numbers.
+
+Supported operations:
+
+* Addition
+* Subtraction
+* Multiplication
+* Division, with a check for division by zero
+
+### 🎓 2. Student Information — `get_student_info`
+
+Retrieves a registered student's:
+
+* Branch of study
+* Year of study
+* Attendance percentage
+
+### 📊 3. Attendance Lookup — `get_student_attendance`
+
+Retrieves the attendance percentage of a registered student independently.
+
+All three tools are defined as Python functions and registered with the LangChain agent using the `@tool` decorator.
 
 ## 💡 Example Queries
 
-Try asking the assistant:
+### 🧮 Mathematical Calculations
 
-* `What is 125 multiplied by 8?`
-* `What is 25 multiplied by 8, then subtract 60?`
-* `Tell me about Sourabh.`
-* `What is Priya's attendance?`
-* `What branch is Nidhi studying in?`
-* `What is Sourabh's attendance, and how many percentage points does he need to reach 95%?`
-* `Tell me about Rahul.`
+```text
+Ask: What is 125 multiplied by 8?
 
-The sample database contains Sourabh, Priya, and Nidhi. Questions about students who aren't registered should receive a not-found response.
+Ask: What is 25 multiplied by 8, then subtract 60?
+```
+
+### 🎓 Student Information
+
+```text
+Ask: Tell me about Sourabh.
+
+Ask: What is Priya's attendance?
+
+Ask: What branch is Nidhi studying in?
+```
+
+### 🔄 Multi-Step Questions
+
+```text
+Ask: What is Sourabh's attendance, and how many percentage
+points does he need to reach 95%?
+```
+
+### 💬 Follow-Up Conversations
+
+```text
+Ask: Tell me about Sourabh.
+
+Assistant: Sourabh is a fourth-year Mechanical Engineering
+student with 87% attendance.
+
+Ask: What is his attendance?
+
+Assistant: Sourabh's attendance is 87%.
+```
+
+*Example responses are illustrative; the exact wording generated by Gemini may vary.*
+
+## 🗃️ Sample Student Database
+
+The project currently uses a Python dictionary containing sample student records.
+
+| Student | Branch                 | Year | Attendance |
+| ------- | ---------------------- | ---: | ---------: |
+| Sourabh | Mechanical Engineering |    4 |        87% |
+| Priya   | Computer Science       |    3 |        91% |
+| Nidhi   | Electrical Engineering |    4 |        84% |
+
+The assistant is instructed not to invent student data and to clearly report when a student is not found.
+
+## 💬 Conversation History
+
+The project uses LangChain's `HumanMessage` to represent user messages and retains the message history returned by the agent.
+
+```python
+conversation.append(HumanMessage(content=question))
+
+result = agent.invoke({
+    "messages": conversation
+})
+
+conversation = result["messages"]
+```
+
+* **`HumanMessage`** represents a message sent by the user.
+* **`agent.invoke()`** processes the conversation and returns the agent's message history.
+* **`conversation = result["messages"]`** retains the returned history, including relevant AI and tool messages.
+
+This enables multi-turn conversations without manually rebuilding the entire message history after every interaction.
+
+**Note:** Conversation history is maintained in application memory only. It is not saved to a file or database, so it is lost when the program exits.
 
 ## 🧰 Technologies Used
 
-* **Language:** Python
-* **LLM:** Google Gemini
-* **Framework:** LangChain
-* **Integration:** `langchain-google-genai`
-* **Concepts:** Agentic AI, LLM Tool Calling, Function Calling, Multi-Tool Workflows
+| Technology                         | Purpose                                                |
+| ---------------------------------- | ------------------------------------------------------ |
+| Python                             | Application logic and tool implementation              |
+| Google Gemini (`gemini-3.6-flash`) | Natural-language understanding and response generation |
+| LangChain                          | Agent creation, tool integration, and message handling |
+| `langchain-google-genai`           | Integration between LangChain and Google Gemini        |
+
+**Key concepts:** Agentic AI, LLM Tool Calling, Function Calling, Multi-Tool Workflows, Conversation History.
 
 ## 📂 Project Structure
 
 ```text
-Agentic AI Assistant LangChain/
-├── main.py
-├── requirements.txt
-├── .gitignore
-└── README.md
+Agentic-AI-Assistant-LangChain/
+│
+├── main.py           # Agent, tools, and conversation loop
+├── requirements.txt  # Python dependencies
+├── .gitignore        # Files excluded from Git
+└── README.md         # Project documentation
 ```
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
+### Prerequisites
+
+* Python installed on your system
+* A Google Gemini API key
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Sourabh-Prajapat/Agentic-AI-Assistant-LangChain.git
-cd "Agentic AI Assistant LangChain"
+
+cd Agentic-AI-Assistant-LangChain
 ```
 
-### 2. Create a virtual environment
+### 2. Create a Virtual Environment
 
 ```bash
 python -m venv .venv
@@ -105,15 +214,15 @@ Activate it on Windows PowerShell:
 .venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### 4. Configure your Gemini API key
+### 4. Configure Your Gemini API Key
 
-Set the API key in PowerShell:
+Set your API key in Windows PowerShell:
 
 ```powershell
 $env:GEMINI_API_KEY="YOUR_API_KEY"
@@ -123,35 +232,51 @@ Replace `YOUR_API_KEY` with your actual Google Gemini API key.
 
 Keep your API key private. Never hard-code it in your source files or upload it to GitHub.
 
-### 5. Run the assistant
+### 5. Run the Assistant
 
 ```bash
 python main.py
 ```
 
-Enter a question when prompted:
+The assistant will prompt you to enter a question:
 
 ```text
-Ask your assistant: What is Sourabh's attendance?
+Ask: What is Sourabh's attendance?
 ```
 
-The assistant will process the question and display its response in the terminal.
+Continue asking questions and using follow-up messages. To exit the application, type:
 
-## 📚 Learning Objectives
+```text
+Ask: exit
+```
+
+## 📚 Learning Outcomes
 
 This project demonstrates:
 
 * Integrating Google Gemini with LangChain.
-* Defining Python functions as AI tools.
-* Using docstrings and type hints to describe tools.
-* Registering multiple tools with an agent.
-* Letting an LLM select tools based on user questions.
-* Executing tool calls and using their results in final responses.
+* Creating custom tools using Python and the `@tool` decorator.
+* Describing tools with docstrings and type hints.
+* Registering multiple tools with an AI agent.
+* Enabling LLM-driven tool selection and execution.
+* Using tool results to generate natural-language responses.
+* Representing user messages with `HumanMessage`.
+* Maintaining session-based, multi-turn conversation history.
 * Building an interactive command-line AI application.
+* Managing API credentials through environment variables.
+
+---
 
 ## 👨‍💻 Author
 
 **Sourabh**
+
 B.Tech Graduate, IIT Jammu
 
 GitHub: [Sourabh-Prajapat](https://github.com/Sourabh-Prajapat)
+
+---
+
+<p align="center">
+  <i>Exploring Agentic AI, one tool at a time. 🚀</i>
+</p>

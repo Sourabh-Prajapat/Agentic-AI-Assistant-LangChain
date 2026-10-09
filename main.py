@@ -2,6 +2,7 @@ import os
 from langchain.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
+from langchain.messages import HumanMessage
 
 
 # Sample student database
@@ -100,25 +101,39 @@ agent = create_agent(
     )
 )
 
+conversation = []
 
-question = input("Ask your assistant: ")
+while True:
+    print("\n")
+    print("="*30)
+    print("Type'Exit' for exit.")
+    print("="*30)
+    question = input("\nAsk: ").strip()
+    
+    if question.lower() == "exit":
+        print("Assistant Goodbye!")
+        break
+    
+    if not question:
+        continue
+    
+    conversation.append(HumanMessage(content=question))
+    
+    result = agent.invoke({
+        "messages": conversation
+    })
+    
+    conversation = result["messages"]
+    
+    content = conversation[-1].content
+    
+    print("\nAssistant: ")
 
-result = agent.invoke({
-    "messages": [
-        {"role": "user", "content": question}
-    ]
-})
-
-
-# Extract and print the final answer
-final_message = result["messages"][-1]
-content = final_message.content
-
-if isinstance(content, list):
-    for block in content:
-        if isinstance(block, dict) and block.get("type") == "text":
-            print(block["text"])
-        elif hasattr(block, "text"):
-            print(block.text)
-else:
-    print(content)
+    if isinstance(content, list):
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "text":
+                print(block["text"])
+            elif hasattr(block, "text"):
+                print(block.text)
+    else:
+        print(content)
